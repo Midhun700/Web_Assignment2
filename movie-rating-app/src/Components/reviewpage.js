@@ -14,6 +14,7 @@ const ReviewPage = () => {
   const [user, setUser] = useState(null); // To store the current user
   const [rating, setRating] = useState(null); // To store the rating
   const [hoverRating, setHoverRating] = useState(null); // To handle hover effect on stars
+  const [averageRating, setAverageRating] = useState(0); // To store the average rating
 
   // Fetch current user
   useEffect(() => {
@@ -42,6 +43,15 @@ const ReviewPage = () => {
       const querySnapshot = await getDocs(q);
       const loadedReviews = querySnapshot.docs.map(doc => doc.data());
       setReviews(loadedReviews);
+
+      // Calculate average rating and multiply by 2 to convert to 10-point scale
+      if (loadedReviews.length > 0) {
+        const totalRating = loadedReviews.reduce((acc, review) => acc + review.rating, 0);
+        const avgRating = (totalRating / loadedReviews.length) * 2; // Multiply by 2 for 10-point scale
+        setAverageRating(avgRating.toFixed(1)); // Round to one decimal place
+      } else {
+        setAverageRating(0); // No reviews, so set to 0
+      }
     };
 
     fetchReviews();
@@ -61,6 +71,12 @@ const ReviewPage = () => {
         setReviews(prev => [...prev, { review: newReview, userEmail: user.email, rating: rating }]);
         setNewReview('');
         setRating(null);
+
+        // Recalculate average rating after adding new review and convert to 10-point scale
+        const newTotalRating = reviews.reduce((acc, review) => acc + review.rating, rating);
+        const newAvgRating = ((newTotalRating / (reviews.length + 1)) * 2).toFixed(1);
+
+        setAverageRating(newAvgRating);
       } catch (error) {
         console.error('Error adding review:', error);
       }
@@ -174,6 +190,10 @@ const ReviewPage = () => {
       <div style={styles.page}>
         <div style={styles.container}>
           <h2 style={styles.heading}>{movie}</h2>
+
+          <h3 style={styles.heading}>
+            <FaStar size={20} color="#f1c40f" /> {averageRating} 
+          </h3> {/* Display average rating out of 10 with yellow star */}
 
           {user ? (
             <>

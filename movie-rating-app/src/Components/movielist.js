@@ -8,21 +8,24 @@ const movies = [
     title: "Inception",
     poster: "/Thumbnails/inception.jpg", // Replace with actual poster URL
     description: "A mind-bending thriller by Christopher Nolan.",
-    cast: "Leonardo DiCaprio, Joseph Gordon-Levitt, Ellen Page"
+    cast: "Leonardo DiCaprio, Joseph Gordon-Levitt, Ellen Page",
+    averageRating: 8.8 // Placeholder average rating
   },
   {
     id: 2,
     title: "The Dark Knight",
     poster: "/Thumbnails/thedarkknight.jpg", // Replace with actual poster URL
     description: "The Dark Knight battles crime in Gotham City.",
-    cast: "Christian Bale, Heath Ledger, Aaron Eckhart"
+    cast: "Christian Bale, Heath Ledger, Aaron Eckhart",
+    averageRating: 9.0 // Placeholder average rating
   },
   {
     id: 3,
     title: "Interstellar",
     poster: "/Thumbnails/interstellar.jpg", // Replace with actual poster URL
     description: "A journey beyond the stars in search of a new home for humanity.",
-    cast: "Matthew McConaughey, Anne Hathaway, Jessica Chastain"
+    cast: "Matthew McConaughey, Anne Hathaway, Jessica Chastain",
+    averageRating: 8.6 // Placeholder average rating
   }
 ];
 
@@ -37,33 +40,38 @@ const MovieList = () => {
         </div>
       </nav>
       <div className='content'>
-      <h1 style={{ color: 'white', paddingLeft: 30 }}>Movie List</h1>
-      <ul style={{ padding: 30 }}>
-        {movies.map((movie) => (
-          <li key={movie.id} style={{ listStyle: 'none', marginBottom: '20px' }}>
-            <div className="movie-card" style={cardStyle}>
-              {/* Poster on the left */}
-              <img
-                src={movie.poster}
-                alt={`${movie.title} poster`}
-                style={posterStyle}
-              />
+        <h1 style={{ color: 'white', paddingLeft: 30 }}>Movie List</h1>
+        <ul style={{ padding: 30 }}>
+          {movies.map((movie) => (
+            <li key={movie.id} style={{ listStyle: 'none', marginBottom: '20px' }}>
+              <div className="movie-card" style={cardStyle}>
+                {/* Poster on the left */}
+                <img
+                  src={movie.poster}
+                  alt={`${movie.title} poster`}
+                  style={posterStyle}
+                />
 
-              {/* Movie details */}
-              <div style={detailsStyle}>
-                <h2 style={{ color: 'white' }}>{movie.title}</h2>
-                <p style={{ color: 'white' }}><strong>Description:</strong> {movie.description}</p>
-                <p style={{ color: 'white' }}><strong>Cast:</strong> {movie.cast}</p>
+                {/* Movie details */}
+                <div style={detailsStyle}>
+                  <h2 style={{ color: 'white' }}>
+                    {movie.title}
+                    <span style={{ color: 'yellow', fontSize: '20px', marginLeft: '10px' }}>
+                      ★ {movie.averageRating}
+                    </span>
+                  </h2>
+                  <p style={{ color: 'white' }}><strong>Description:</strong> {movie.description}</p>
+                  <p style={{ color: 'white' }}><strong>Cast:</strong> {movie.cast}</p>
 
-                {/* Link to the review page */}
-                <Link to={`/movies/${movie.id}/review`} style={linkStyle}>
-                  Go to Reviews
-                </Link>
+                  {/* Link to the review page */}
+                  <Link to={`/movies/${movie.id}/review`} style={linkStyle}>
+                    Go to Reviews
+                  </Link>
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
@@ -141,6 +149,7 @@ const linkStyle = {
   transition: 'background-color 0.3s ease', // Smooth hover transition
 };
 
+// Smooth hover transition
 linkStyle[':hover'] = {
   backgroundColor: '#ffd700', // Darker yellow on hover
 };
