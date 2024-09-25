@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { auth, db } from '../firebase'; // Firebase config
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { FaStar } from 'react-icons/fa';
+import Navbar from './Navbar'; // Import the Navbar component
 
 const ReviewPage = () => {
   const { id } = useParams(); // Movie ID from URL
@@ -10,7 +12,8 @@ const ReviewPage = () => {
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState('');
   const [user, setUser] = useState(null); // To store the current user
-  const [rating, setRating] = useState(0); // To store the rating
+  const [rating, setRating] = useState(null); // To store the rating
+  const [hoverRating, setHoverRating] = useState(null); // To handle hover effect on stars
 
   // Fetch current user
   useEffect(() => {
@@ -20,7 +23,6 @@ const ReviewPage = () => {
   }, []);
 
   useEffect(() => {
-    // Example movie list, consider fetching from a database if needed
     const movieList = [
       { id: 1, title: 'Inception' },
       { id: 2, title: 'The Matrix' },
@@ -35,7 +37,6 @@ const ReviewPage = () => {
       setMovie('Movie not found');
     }
 
-    // Load reviews from Firestore
     const fetchReviews = async () => {
       const q = query(collection(db, 'reviews'), where('movieId', '==', id));
       const querySnapshot = await getDocs(q);
@@ -49,19 +50,17 @@ const ReviewPage = () => {
   const handleAddReview = async () => {
     if (newReview.trim() && user && rating > 0) {
       try {
-        // Add review to Firestore
         await addDoc(collection(db, 'reviews'), {
           movieId: id,
           review: newReview,
           userEmail: user.email,
-          rating: rating, // Save the rating as well
-          timestamp: new Date()
+          rating: rating,
+          timestamp: new Date(),
         });
 
-        // Update the reviews list locally
         setReviews(prev => [...prev, { review: newReview, userEmail: user.email, rating: rating }]);
         setNewReview('');
-        setRating(0); // Reset the rating
+        setRating(null);
       } catch (error) {
         console.error('Error adding review:', error);
       }
@@ -69,17 +68,30 @@ const ReviewPage = () => {
   };
 
   const styles = {
+    page: {
+      backgroundColor: '#000',
+      minHeight: '100vh',
+      color: '#fff',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '20px',
+    },
     container: {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       maxWidth: '600px',
-      margin: '0 auto',
+      width: '100%',
+      backgroundColor: '#111',
       padding: '20px',
+      borderRadius: '8px',
+      boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)',
     },
     heading: {
       textAlign: 'center',
       marginBottom: '10px',
+      color: '#fff',
     },
     textarea: {
       width: '100%',
@@ -90,12 +102,14 @@ const ReviewPage = () => {
       border: '1px solid #ccc',
       borderRadius: '4px',
       fontSize: '16px',
+      backgroundColor: '#333',
+      color: '#fff',
     },
     button: {
       width: '150px',
       padding: '10px',
-      backgroundColor: '#007bff',
-      color: 'white',
+      backgroundColor: '#f1c40f',
+      color: '#000',
       border: 'none',
       borderRadius: '4px',
       cursor: 'pointer',
@@ -110,69 +124,102 @@ const ReviewPage = () => {
       textAlign: 'center',
     },
     reviewItem: {
-      backgroundColor: '#f9f9f9',
+      backgroundColor: '#444',
       padding: '10px',
       marginBottom: '10px',
-      border: '1px solid #ddd',
+      border: '1px solid #666',
       borderRadius: '4px',
       fontSize: '16px',
+      color: '#fff',
+    },
+    starRating: {
+      display: 'flex',
+      justifyContent: 'center',
+      marginBottom: '10px',
+    },
+    star: {
+      cursor: 'pointer',
+      transition: 'color 200ms',
     },
     ratingLabel: {
-      marginRight: '10px',
+      color: '#fff',
     },
-    ratingSelect: {
-      marginBottom: '10px',
-    }
+    reviewStars: {
+      display: 'flex',
+      justifyContent: 'center',
+      marginTop: '5px',
+    },
   };
 
-  return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>{movie}</h2>
-      
-      {/* Review Input Area */}
-      {user ? (
-        <>
-          <textarea
-            value={newReview}
-            onChange={(e) => setNewReview(e.target.value)}
-            placeholder="Add your review"
-            style={styles.textarea}
+  const renderStars = (rating) => (
+    <div style={styles.reviewStars}>
+      {[...Array(5)].map((star, index) => {
+        const currentRating = index + 1;
+        return (
+          <FaStar
+            key={index}
+            size={20}
+            color={currentRating <= rating ? '#f1c40f' : '#ccc'}
           />
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-            <label style={styles.ratingLabel}>Rating:</label>
-            <select
-              value={rating}
-              onChange={(e) => setRating(parseInt(e.target.value))}
-              style={styles.ratingSelect}
-            >
-              <option value={0}>Select Rating</option>
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-              <option value={5}>5</option>
-            </select>
-          </div>
-          <button onClick={handleAddReview} style={styles.button}>Submit Review</button>
-        </>
-      ) : (
-        <p>Please log in to submit a review.</p>
-      )}
+        );
+      })}
+    </div>
+  );
 
-      {/* User Reviews Section */}
-      <h3 style={styles.heading}>User Reviews</h3>
-      {reviews.length > 0 ? (
-        <ul style={styles.reviewsList}>
-          {reviews.map((r, index) => (
-            <li key={index} style={styles.reviewItem}>
-              <strong>{r.userEmail}:</strong> {r.review} <br />
-              <strong>Rating:</strong> {r.rating} / 5
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No reviews yet.</p>
-      )}
+  return (
+    <div>
+      {/* Navbar */}
+      <Navbar />
+
+      <div style={styles.page}>
+        <div style={styles.container}>
+          <h2 style={styles.heading}>{movie}</h2>
+
+          {user ? (
+            <>
+              <textarea
+                value={newReview}
+                onChange={(e) => setNewReview(e.target.value)}
+                placeholder="Add your review"
+                style={styles.textarea}
+              />
+              <div style={styles.starRating}>
+                {[...Array(5)].map((star, index) => {
+                  const currentRating = index + 1;
+                  return (
+                    <FaStar
+                      key={index}
+                      size={30}
+                      style={styles.star}
+                      color={currentRating <= (hoverRating || rating) ? '#f1c40f' : '#ccc'}
+                      onClick={() => setRating(currentRating)}
+                      onMouseEnter={() => setHoverRating(currentRating)}
+                      onMouseLeave={() => setHoverRating(null)}
+                    />
+                  );
+                })}
+              </div>
+              <button onClick={handleAddReview} style={styles.button}>Submit Review</button>
+            </>
+          ) : (
+            <p>Please log in to submit a review.</p>
+          )}
+
+          <h3 style={styles.heading}>User Reviews</h3>
+          {reviews.length > 0 ? (
+            <ul style={styles.reviewsList}>
+              {reviews.map((r, index) => (
+                <li key={index} style={styles.reviewItem}>
+                  <strong>{r.userEmail}:</strong> {r.review}
+                  {renderStars(r.rating)}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No reviews yet.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

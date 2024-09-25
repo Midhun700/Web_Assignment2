@@ -15,7 +15,7 @@ const MainPage = () => {
   };
 
   return (
-    <div>
+    <div style={pageStyle}>
       {/* Navigation bar */}
       <nav style={navBarStyle}>
         <h1 style={logoStyle}>Movie Rating App</h1>
@@ -38,8 +38,8 @@ const MainPage = () => {
 
       {/* Main content */}
       <div style={mainContentStyle}>
-        <h2>Welcome to Movie Rating App</h2>
-        <p>Rate movies, read reviews, and add your own reviews!</p>
+        <h2 style={mainHeadingStyle}>Welcome to Movie Rating App</h2>
+        <p style={mainDescriptionStyle}>Rate movies, read reviews, and add your own reviews!</p>
 
         {isLoggedIn && (
           <Link to="/movies">
@@ -52,6 +52,11 @@ const MainPage = () => {
 };
 
 // Styles
+const pageStyle = {
+  backgroundColor: '#000', // Changed background color to black
+  minHeight: '100vh',
+};
+
 const navBarStyle = {
   display: 'flex',
   justifyContent: 'space-between',
@@ -90,11 +95,24 @@ const mainContentStyle = {
   padding: '50px 20px',
 };
 
+const mainHeadingStyle = {
+  fontSize: '36px',
+  fontWeight: 'bold',
+  marginBottom: '20px',
+  color: '#fff', // Changed heading color to white
+};
+
+const mainDescriptionStyle = {
+  fontSize: '20px',
+  color: '#fff', // Changed description color to white
+  marginBottom: '30px',
+};
+
 const movieListButtonStyle = {
   padding: '10px 20px',
   fontSize: '16px',
-  backgroundColor: '#007bff',
-  color: '#fff',
+  backgroundColor: '#FFD700', // Changed button color to yellow (hex code for gold)
+  color: '#000', // Set the text color to black for better contrast
   border: 'none',
   borderRadius: '5px',
   cursor: 'pointer',
