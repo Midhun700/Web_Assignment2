@@ -1,69 +1,92 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { db } from '../firebase'; // Firebase config
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 // Sample movie data with title, poster, description, and cast
 const movies = [
   {
     id: 1,
     title: "Inception",
-    poster: "/Thumbnails/inception.jpg", // Replace with actual poster URL
+    poster: "/Thumbnails/inception.jpg", 
     description: "A mind-bending thriller by Christopher Nolan.",
     cast: "Leonardo DiCaprio, Joseph Gordon-Levitt, Ellen Page",
-    averageRating: 8.8 // Placeholder average rating
   },
   {
     id: 2,
     title: "The Dark Knight",
-    poster: "/Thumbnails/thedarkknight.jpg", // Replace with actual poster URL
+    poster: "/Thumbnails/thedarkknight.jpg", 
     description: "The Dark Knight battles crime in Gotham City.",
     cast: "Christian Bale, Heath Ledger, Aaron Eckhart",
-    averageRating: 9.0 // Placeholder average rating
   },
   {
     id: 3,
     title: "Interstellar",
-    poster: "/Thumbnails/interstellar.jpg", // Replace with actual poster URL
+    poster: "/Thumbnails/interstellar.jpg", 
     description: "A journey beyond the stars in search of a new home for humanity.",
     cast: "Matthew McConaughey, Anne Hathaway, Jessica Chastain",
-    averageRating: 8.6 // Placeholder average rating
   }
 ];
 
 const MovieList = () => {
+  const [averageRatings, setAverageRatings] = useState({});
+
+  useEffect(() => {
+    // Fetch average ratings for all movies
+    const fetchRatings = async () => {
+      const ratings = {};
+      
+      for (const movie of movies) {
+        const q = query(collection(db, 'reviews'), where('movieId', '==', String(movie.id)));
+        const querySnapshot = await getDocs(q);
+        const reviews = querySnapshot.docs.map(doc => doc.data());
+
+        // Calculate average rating and multiply by 2 to convert to 10-point scale
+        if (reviews.length > 0) {
+          const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+          ratings[movie.id] = ((totalRating / reviews.length) * 2).toFixed(1); // Convert to 10-point scale
+        } else {
+          ratings[movie.id] = 0; // No reviews, so set to 0
+        }
+      }
+
+      setAverageRatings(ratings);
+    };
+
+    fetchRatings();
+  }, []);
+
   return (
     <div className="movie-list" style={movieListStyle}>
-      {/* Navigation bar */}
       <nav style={navBarStyle}>
         <h1 style={logoStyle}>Movie Rating App</h1>
         <div style={navLinkContainerStyle}>
           <Link to="/" style={navLinkStyle}>Home</Link>
         </div>
       </nav>
+
       <div className='content'>
         <h1 style={{ color: 'white', paddingLeft: 30 }}>Movie List</h1>
         <ul style={{ padding: 30 }}>
           {movies.map((movie) => (
             <li key={movie.id} style={{ listStyle: 'none', marginBottom: '20px' }}>
               <div className="movie-card" style={cardStyle}>
-                {/* Poster on the left */}
                 <img
                   src={movie.poster}
                   alt={`${movie.title} poster`}
                   style={posterStyle}
                 />
 
-                {/* Movie details */}
                 <div style={detailsStyle}>
                   <h2 style={{ color: 'white' }}>
                     {movie.title}
                     <span style={{ color: 'yellow', fontSize: '20px', marginLeft: '10px' }}>
-                      ★ {movie.averageRating}
+                      ★ {averageRatings[movie.id] || 'N/A'}
                     </span>
                   </h2>
                   <p style={{ color: 'white' }}><strong>Description:</strong> {movie.description}</p>
                   <p style={{ color: 'white' }}><strong>Cast:</strong> {movie.cast}</p>
 
-                  {/* Link to the review page */}
                   <Link to={`/movies/${movie.id}/review`} style={linkStyle}>
                     Go to Reviews
                   </Link>
@@ -83,7 +106,6 @@ const movieListStyle = {
   minHeight: '100vh',
 };
 
-// Navigation bar styles
 const navBarStyle = {
   width: '100%',
   display: 'flex',
@@ -115,10 +137,10 @@ const navLinkStyle = {
 
 const cardStyle = {
   display: 'flex',
-  border: '2px solid yellow', // Updated border to yellow
+  border: '2px solid yellow',
   borderRadius: '8px',
   padding: '10px',
-  backgroundColor: 'black', // Black background for the card
+  backgroundColor: 'black',
 };
 
 const posterStyle = {
@@ -132,26 +154,25 @@ const detailsStyle = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
-  color: 'white', // White text for all details
+  color: 'white',
 };
 
 const linkStyle = {
   display: 'inline-block',
-  backgroundColor: 'yellow', // Yellow background for the link
-  color: 'black', // Black text for contrast
-  padding: '10px 15px', // Padding to give the box a button feel
-  borderRadius: '5px', // Rounded corners
-  textDecoration: 'none', // Remove underline
+  backgroundColor: 'yellow',
+  color: 'black',
+  padding: '10px 15px',
+  borderRadius: '5px',
+  textDecoration: 'none',
   fontWeight: 'bold',
   marginTop: '10px',
-  textAlign: 'center', // Center the text within the box
-  width: '100%', // Ensure the box takes up the full width of the container
-  transition: 'background-color 0.3s ease', // Smooth hover transition
+  textAlign: 'center',
+  width: '100%',
+  transition: 'background-color 0.3s ease',
 };
 
-// Smooth hover transition
 linkStyle[':hover'] = {
-  backgroundColor: '#ffd700', // Darker yellow on hover
+  backgroundColor: '#ffd700',
 };
 
 export default MovieList;
